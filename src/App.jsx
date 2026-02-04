@@ -11,65 +11,121 @@ import { FormField } from './components/ui/FormField';
 import { Dashboard } from './pages/Dashboard';
 import { PestDoctor } from './pages/PestDoctor';
 import { PlantDetail } from './pages/PlantDetail';
-import { GUIA_CULTIVO } from './data/Constants';
+import { Login } from './pages/Login';
+import { GUIA_CULTIVO } from './data/constants'; 
 
 export default function App() {
-  // --- ESTADOS GLOBALES ---
+  // --- ESTADOS DE AUTENTICACIÓN ---
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // --- ESTADOS GLOBALES DEL HUERTO ---
   const [plants, setPlants] = useState([]);
   const [activeTab, setActiveTab] = useState('huerto');
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [selectedPlant, setSelectedPlant] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [formErrors, setFormErrors] = useState({ name: '', type: '' });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
-  // Estado para el formulario de nueva planta
-  const [newPlant, setNewPlant] = useState({ name: '', type: 'Aromática' });
+  // Estado para el formulario de nueva planta (Campos lógicos verificados)
+  const [newPlant, setNewPlant] = useState({ 
+    name: '', 
+    type: 'Aromática' 
+  });
 
-  // --- EFECTOS (Persistencia y Simulación) ---
-  
-  // 1. Carga inicial con estado de "Cargando"
+  // --- EFECTOS ---
+
+  // 1. Persistencia de Datos
   useEffect(() => {
-    const saved = localStorage.getItem('huertoup_data_jose');
-    if (saved) setPlants(JSON.parse(saved));
+    const savedPlants = localStorage.getItem('huertoup_data_jose');
+
+    if (savedPlants) {
+      setPlants(JSON.parse(savedPlants));
+    }
     
-    // Simulamos un tiempo de carga para mostrar el estado UI: Cargando
     setTimeout(() => setIsLoading(false), 800);
   }, []);
 
-  // 2. Guardar automáticamente al cambiar las plantas
+  // 2. Guardar plantas automáticamente
   useEffect(() => {
-    localStorage.setItem('huertoup_data_jose', JSON.stringify(plants));
-  }, [plants]);
+    if (isAuthenticated) {
+      localStorage.setItem('huertoup_data_jose', JSON.stringify(plants));
+    }
+  }, [plants, isAuthenticated]);
 
-  // 3. Simulador de Vida: Reduce hidratación cada cierto tiempo
+  // 3. Simulador de Hidratación
   useEffect(() => {
+    if (!isAuthenticated) return;
+    
     const timer = setInterval(() => {
       setPlants(prev => prev.map(p => ({ 
         ...p, 
         hydration: Math.max(0, p.hydration - 1) 
       })));
-    }, 60000); // Reduce 1% cada minuto para propósitos de prueba
+    }, 60000);
     return () => clearInterval(timer);
-  }, []);
+  }, [isAuthenticated]);
 
-  // --- MANEJADORES DE ACCIONES ---
-  
-  const handleAddPlant = (e) => {
+  // --- MANEJADORES ---
+
+  const handleLogin = (userData) => {
+    setIsAuthenticated(true);
+    setUser(userData);
+    localStorage.setItem('huertoup_session', JSON.stringify(userData));
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+    localStorage.removeItem('huertoup_session');
+  };
+
+  const handleSavePlant = (e) => {
     e.preventDefault();
-    if (!newPlant.name.trim()) return;
+    const errors = { name: '', type: '' };
+    if (!newPlant.name.trim()) {
+      errors.name = 'Escribe un nombre para la planta.';
+    }
+    if (!newPlant.type) {
+      errors.type = 'Selecciona un tipo de planta.';
+    }
+    if (errors.name || errors.type) {
+      setFormErrors(errors);
+      return;
+    }
 
-    const plantToAdd = {
-      id: Date.now(),
-      ...newPlant,
-      hydration: 100,
-      date: new Date().toLocaleDateString(),
-      // Datos extra de la guía si existen
-      ...GUIA_CULTIVO.find(g => g.name === newPlant.name)
-    };
+    if (isEditing && editingId) {
+      setPlants(plants.map(p => 
+        p.id === editingId 
+          ? { 
+              ...p, 
+              name: newPlant.name.trim(), 
+              type: newPlant.type,
+              ...GUIA_CULTIVO.find(g => g.name === newPlant.name)
+            } 
+          : p
+      ));
+    } else {
+      const plantToAdd = {
+        id: Date.now(),
+        name: newPlant.name.trim(),
+        type: newPlant.type,
+        hydration: 100, // Campo lógico de estado inicial
+        date: new Date().toLocaleDateString(), // Campo lógico de registro
+        ...GUIA_CULTIVO.find(g => g.name === newPlant.name)
+      };
 
-    setPlants([plantToAdd, ...plants]);
+      setPlants([plantToAdd, ...plants]);
+    }
+
     setShowModal(false);
     setNewPlant({ name: '', type: 'Aromática' });
+    setFormErrors({ name: '', type: '' });
+    setIsEditing(false);
+    setEditingId(null);
   };
 
   const handleWater = (id) => {
@@ -83,8 +139,20 @@ export default function App() {
     }
   };
 
-  // --- RENDERIZADO CONDICIONAL DE VISTAS ---
-  
+  const handleEditPlant = (plant) => {
+    setIsEditing(true);
+    setEditingId(plant.id);
+    setNewPlant({ name: plant.name || '', type: plant.type || 'Aromática' });
+    setFormErrors({ name: '', type: '' });
+    setShowModal(true);
+  };
+
+  // --- RENDERIZADO ---
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -110,6 +178,7 @@ export default function App() {
             onDelete={handleDelete}
             onAddClick={() => setShowModal(true)}
             onSelectPlant={setSelectedPlant}
+            onEditPlant={handleEditPlant}
           />
         );
       case 'plagas':
@@ -127,7 +196,10 @@ export default function App() {
                   label="Añadir esta variedad" 
                   variant="outline" 
                   onClick={() => {
+                    setIsEditing(false);
+                    setEditingId(null);
                     setNewPlant({ name: item.name, type: item.type });
+                    setFormErrors({ name: '', type: '' });
                     setShowModal(true);
                   }}
                 />
@@ -142,7 +214,16 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] pb-20 font-sans">
-      <PageHeader onAddClick={() => setShowModal(true)} />
+      <PageHeader 
+        onAddClick={() => {
+          setIsEditing(false);
+          setEditingId(null);
+          setFormErrors({ name: '', type: '' });
+          setShowModal(true);
+        }} 
+        user={user} 
+        onLogout={handleLogout} 
+      />
       
       <main className="max-w-5xl mx-auto px-6">
         {!selectedPlant && (
@@ -152,7 +233,7 @@ export default function App() {
         {renderContent()}
       </main>
 
-      {/* MODAL DE CREACIÓN (Cumple requisito Formulario) */}
+      {/* MODAL DE CREACIÓN - Verificación de campos lógicos */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
           <div className="bg-white w-full max-w-md rounded-5xl p-10 shadow-2xl animate-fade relative">
@@ -167,18 +248,23 @@ export default function App() {
               <div className="bg-green-100 text-green-600 p-2 rounded-xl">
                 <Sprout size={24} />
               </div>
-              <h2 className="text-2xl font-black text-slate-800">Nueva Planta</h2>
+              <h2 className="text-2xl font-black text-slate-800">
+                {isEditing ? 'Editar Planta' : 'Nueva Planta'}
+              </h2>
             </div>
 
-            <form onSubmit={handleAddPlant} className="space-y-6">
+            <form onSubmit={handleSavePlant} className="space-y-6">
+              {/* CAMPO LÓGICO: NOMBRE */}
               <FormField 
                 label="Nombre de la planta"
                 placeholder="Ej: Tomate Cherry"
                 value={newPlant.name}
                 onChange={(e) => setNewPlant({...newPlant, name: e.target.value})}
+                error={formErrors.name}
                 required
               />
               
+              {/* CAMPO LÓGICO: CATEGORÍA/TIPO */}
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] font-black uppercase text-slate-500 ml-1">Categoría</label>
                 <select 
@@ -191,11 +277,16 @@ export default function App() {
                   <option value="Frutal">Frutal</option>
                   <option value="Decorativa">Decorativa</option>
                 </select>
+                {formErrors.type && (
+                  <span className="text-red-500 text-xs font-bold ml-1 animate-fade">
+                    {formErrors.type}
+                  </span>
+                )}
               </div>
 
               <BaseButton 
                 type="submit"
-                label="Registrar en mi huerto" 
+                label={isEditing ? 'Guardar cambios' : 'Registrar en mi huerto'} 
                 className="w-full py-5 text-lg"
               />
             </form>

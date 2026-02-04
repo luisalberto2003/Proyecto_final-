@@ -1,8 +1,8 @@
 // src/components/layout/PageHeader.jsx
-import { Leaf, Plus } from 'lucide-react';
+import { Leaf, Plus, LogOut } from 'lucide-react';
 import { BaseButton } from '../ui/BaseButton';
 
-export const PageHeader = ({ onAddClick }) => {
+export const PageHeader = ({ onAddClick, user, onLogout }) => {
   return (
     <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 px-6 py-4">
       <div className="max-w-5xl mx-auto flex justify-between items-center">
@@ -16,14 +16,33 @@ export const PageHeader = ({ onAddClick }) => {
           </h1>
         </div>
 
-        {/* BOTÓN DE ACCIÓN REUTILIZABLE */}
-        <BaseButton 
-          variant="primary" 
-          onClick={onAddClick}
-          className="!p-3 !rounded-2xl" // Ajuste fino de padding para el icono
-        >
-          <Plus size={24} />
-        </BaseButton>
+        <div className="flex items-center gap-3">
+          {/* SECCION DE USUARIO */}
+          {user && (
+            <div className="hidden sm:flex flex-col items-end mr-2">
+              <span className="text-xs font-bold text-slate-700">{user.name || 'Usuario'}</span>
+              <span className="text-[10px] text-slate-400">{user.email}</span>
+            </div>
+          )}
+
+          <BaseButton 
+            variant="ghost"
+            onClick={onLogout}
+            className="!px-3 !py-2 text-slate-600"
+            title="Cerrar sesion"
+          >
+            <LogOut size={18} />
+          </BaseButton>
+
+          {/* BOTON DE ACCION REUTILIZABLE */}
+          <BaseButton 
+            variant="primary" 
+            onClick={onAddClick}
+            className="!p-3 !rounded-2xl" // Ajuste fino de padding para el icono
+          >
+            <Plus size={24} />
+          </BaseButton>
+        </div>
       </div>
     </header>
   );

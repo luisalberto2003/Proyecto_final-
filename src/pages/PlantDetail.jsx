@@ -1,5 +1,6 @@
-// src/pages/PlantDetail.jsx
+import React from 'react';
 import { ArrowLeft, Sun, Timer, Droplets, Info } from 'lucide-react';
+// IMPORTANTE: Corregimos las rutas para que pasen por /components/
 import { BaseButton } from '../components/ui/BaseButton';
 import { HydrationBar } from '../components/ui/HydrationBar';
 import { StatusBadge } from '../components/ui/StatusBadge';
@@ -20,6 +21,7 @@ export const PlantDetail = ({ plant, onBack }) => {
       <div className="bg-white rounded-5xl p-10 shadow-sm border border-slate-50">
         <div className="flex justify-between items-start mb-8">
           <div>
+            {/* Verificamos que la variante sea lógica (info, success, danger) */}
             <StatusBadge label={plant.type} variant="info" />
             <h2 className="text-4xl font-black text-slate-800 mt-2">{plant.name}</h2>
           </div>
@@ -32,7 +34,7 @@ export const PlantDetail = ({ plant, onBack }) => {
           <HydrationBar percentage={plant.hydration} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-slate-50 p-6 rounded-3xl">
             <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase mb-2">
               <Sun size={14} /> Necesidad de Luz
@@ -52,7 +54,7 @@ export const PlantDetail = ({ plant, onBack }) => {
             <Droplets size={18} /> Consejo del experto
           </h4>
           <p className="text-blue-600 text-sm leading-relaxed italic">
-            {plant.tip || "Mantén la tierra húmeda pero evita el encharcamiento para que las raíces respiren."}
+            {plant.tip || "Mantén la tierra húmeda pero evita el encharcamiento."}
           </p>
         </div>
       </div>

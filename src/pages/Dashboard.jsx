@@ -4,7 +4,7 @@ import { FormField } from '../components/ui/FormField';
 import { PlantGrid } from '../components/garden/PlantGrid';
 import { EmptyGarden } from '../components/garden/EmptyGarden';
 
-export const Dashboard = ({ plants, searchTerm, setSearchTerm, onWater, onDelete, onAddClick, onSelectPlant }) => {
+export const Dashboard = ({ plants, searchTerm, setSearchTerm, onWater, onDelete, onAddClick, onSelectPlant, onEditPlant }) => {
   // Filtramos las plantas según el buscador
   const filteredPlants = plants.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -31,6 +31,7 @@ export const Dashboard = ({ plants, searchTerm, setSearchTerm, onWater, onDelete
           onWater={onWater} 
           onDelete={onDelete} 
           onSelect={onSelectPlant} // Para ir al detalle
+          onEdit={onEditPlant}
         />
       )}
     </div>

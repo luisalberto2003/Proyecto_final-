@@ -1,6 +1,6 @@
 // src/pages/PestDoctor.jsx
 import { Bug, ShieldAlert } from 'lucide-react';
-import { DOCTOR_PLAGAS } from '../data/Constants';
+import { DOCTOR_PLAGAS } from '../data/constants';
 import { StatusBadge } from '../components/ui/StatusBadge';
 
 export const PestDoctor = () => {

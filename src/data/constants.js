@@ -1,4 +1,3 @@
-
 /*Plantas de ejemplo para el cultivo*/
 export const GUIA_CULTIVO = [
   { 
@@ -54,5 +53,12 @@ export const DOCTOR_PLAGAS = [
     symptom: 'Manchas blancas con textura de algodón.', 
     solution: 'Alcohol diluido o jabón.', 
     danger: 'Alta' 
+  },
+  { 
+    id: 4, 
+    name: 'Mosca Blanca', 
+    symptom: 'Pequeños insectos blancos al sacudir la planta.', 
+    solution: 'Trampas amarillas y jabón potásico.', 
+    danger: 'Media' 
   }
 ];
