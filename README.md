@@ -1,4 +1,4 @@
-# HuertoUP - Proyecto Integrador (Fase 1)
+?# HuertoUP - Proyecto Integrador (Fase 1)
 
 **HuertoUP** es una plataforma de gestión para huertos urbanos desarrollada como proyecto final de semestre. La aplicación permite a los usuarios monitorear la salud de sus plantas, gestionar el riego mediante un simulador de hidratación y acceder a una base de conocimientos técnica sobre cultivos y plagas.
 
@@ -16,24 +16,48 @@ El sistema está diseñado bajo una arquitectura de componentes en **React**, ut
 
 ## Instrucciones para correr el proyecto
 
-Para ejecutar la aplicación en un entorno local, siga estos pasos:
+### Frontend
 
-1. **Instalar dependencias**:
+1. **Entrar a la carpeta del frontend**:
+```bash
+cd frontend
+
+```
+
+2. **Instalar dependencias**:
 ```bash
 npm install
 
 ```
 
-
-2. **Iniciar el servidor de desarrollo**:
+3. **Iniciar el servidor de desarrollo**:
 ```bash
 npm run dev
 
 ```
 
-
-3. **Acceso**:
+4. **Acceso**:
 Abra su navegador en la dirección `http://localhost:5173`.
+
+### Backend
+
+1. **Entrar a la carpeta del backend**:
+```bash
+cd backend
+
+```
+
+2. **Instalar dependencias**:
+```bash
+npm install
+
+```
+
+3. **Iniciar el servidor**:
+```bash
+npm run dev
+
+```
 
 ---
 
@@ -82,4 +106,6 @@ Etiquetas de estado para categorizar plantas (Aromática, Frutal, etc.) con esti
 * **Tailwind CSS**: Estilado completo y configuración de temas personalizados.
 * **Validaciones**: Formularios con control de errores básicos.
 * **Estados de UI**: Manejo de estados de "Cargando", "Vacío", "Error" y "Éxito".
+
+
 
