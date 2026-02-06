@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Sprout, ArrowRight } from 'lucide-react';
-// Importamos tus componentes de UI siguiendo tu estructura de carpetas
 import { BaseButton } from '../components/ui/BaseButton';
 import { FormField } from '../components/ui/FormField';
 
@@ -10,20 +9,11 @@ export const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ name: '', email: '', password: '', general: '' });
+  const [loading, setLoading] = useState(false);
 
-  const loadUsers = () => {
-    try {
-      return JSON.parse(localStorage.getItem('huertoup_users')) || [];
-    } catch {
-      return [];
-    }
-  };
+  const API_URL = 'http://localhost:3000/api/auth';
 
-  const saveUsers = (users) => {
-    localStorage.setItem('huertoup_users', JSON.stringify(users));
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const nextErrors = { name: '', email: '', password: '', general: '' };
 
@@ -42,28 +32,37 @@ export const Login = ({ onLogin }) => {
       return;
     }
 
-    const users = loadUsers();
+    try {
+      setLoading(true);
+      setErrors({ name: '', email: '', password: '', general: '' });
 
-    if (mode === 'login') {
-      const user = users.find(u => u.email === email.trim());
-      if (!user || user.password !== password) {
-        setErrors({ ...nextErrors, general: 'Usuario o clave incorrecta.' });
+      const url = mode === 'login' ? `${API_URL}/login` : `${API_URL}/register`;
+
+      const body =
+        mode === 'login'
+          ? { email: email.trim(), password }
+          : { name: name.trim(), email: email.trim(), password };
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrors((prev) => ({ ...prev, general: data.error || 'Error en el servidor' }));
         return;
       }
-      onLogin({ email: user.email, name: user.name || user.email.split('@')[0] });
-      return;
-    }
 
-    const exists = users.some(u => u.email === email.trim());
-    if (exists) {
-      setErrors({ ...nextErrors, general: 'Ese correo ya está registrado.' });
-      return;
+      // data debería traer el usuario
+      onLogin(data);
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, general: 'No se pudo conectar con el servidor' }));
+    } finally {
+      setLoading(false);
     }
-
-    const newUser = { email: email.trim(), password, name: name.trim() };
-    users.push(newUser);
-    saveUsers(users);
-    onLogin({ email: newUser.email, name: newUser.name });
   };
 
   return (
@@ -74,12 +73,14 @@ export const Login = ({ onLogin }) => {
             <Sprout size={40} />
           </div>
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">HuertoUp</h1>
-          <p className="text-slate-500 font-medium text-center">Inicia sesión para gestionar tu huerto urbano</p>
+          <p className="text-slate-500 font-medium text-center">
+            {mode === 'login' ? 'Inicia sesión para gestionar tu huerto urbano' : 'Crea tu cuenta'}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {mode === 'register' && (
-            <FormField 
+            <FormField
               label="Nombre"
               placeholder="Tu nombre"
               value={name}
@@ -89,7 +90,7 @@ export const Login = ({ onLogin }) => {
             />
           )}
 
-          <FormField 
+          <FormField
             label="Correo Electrónico"
             type="email"
             placeholder="usuario@ejemplo.com"
@@ -98,8 +99,8 @@ export const Login = ({ onLogin }) => {
             error={errors.email}
             required
           />
-          
-          <FormField 
+
+          <FormField
             label="Contraseña"
             type="password"
             placeholder="••••••••"
@@ -115,11 +116,12 @@ export const Login = ({ onLogin }) => {
             </p>
           )}
 
-          <BaseButton 
+          <BaseButton
             type="submit"
-            label={mode === 'login' ? 'Entrar al Huerto' : 'Crear cuenta'} 
+            label={loading ? 'Cargando...' : mode === 'login' ? 'Entrar al Huerto' : 'Crear cuenta'}
             className="w-full py-5 text-lg"
             icon={ArrowRight}
+            disabled={loading}
           />
 
           <button

@@ -7,8 +7,8 @@ import { EmptyGarden } from '../components/garden/EmptyGarden';
 export const Dashboard = ({ plants, searchTerm, setSearchTerm, onWater, onDelete, onAddClick, onSelectPlant, onEditPlant }) => {
   // Filtramos las plantas según el buscador
   const filteredPlants = plants.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  (p.name || p.common_name || '').toLowerCase().includes(searchTerm.toLowerCase())
+);
 
   return (
     <div className="animate-fade">

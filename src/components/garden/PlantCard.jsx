@@ -46,8 +46,8 @@ export const PlantCard = ({ plant, onWater, onDelete, onSelect, onEdit }) => {
         </div>
       </div>
 
-      <h3 className="text-2xl font-bold text-slate-800 mb-2 leading-tight">
-        {plant.name}
+      <h3 className="text-2xl font-bold text-blue-800 mb-2 leading-tight">
+        {plant.displayName}
       </h3>
       
       <div className="flex items-center gap-1.5 text-slate-400 mb-6">
